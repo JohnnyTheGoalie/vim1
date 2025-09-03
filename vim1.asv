@@ -28,6 +28,3 @@ end
 xy = xy(1:4:end,:);
 
 FINAL = [out xy];
-
-
-
