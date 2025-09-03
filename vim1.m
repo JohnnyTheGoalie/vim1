@@ -1,18 +1,22 @@
-T = readtable('RSSI Database.xls');
+% Keep original headers (optional, just to avoid the warning)
+T = readtable('RSSI Database.xls', 'VariableNamingRule', 'preserve');
 
-% Ensure AP1..AP8 are cleaned the same way
-for i = 1:8
-    col = T{:, i};                 % work with raw column values
+for i = 1:8   % AP1..AP8 only
+    vname = T.Properties.VariableNames{i};
+    col   = T.(vname);              % get the whole variable
 
     if isnumeric(col)
-        % Column was imported as numeric (e.g., AP8) → '*' became NaN
-        col(isnan(col)) = -120;    % make all NaNs be -120
-        T{:, i} = col;
+        % Column imported as numeric (e.g., '*' already became NaN)
+        col(isnan(col)) = -120;
+        T.(vname) = col;            % replace entire variable
     else
-        % Column was imported as text/cell/string → contains '*'
+        % Column imported as text/cell/string — make numeric
         col = string(col);
-        col(col == "*") = "-120";  % replace '*' with '-120'
-        T{:, i} = str2double(col); % convert to numeric
-        T{isnan(T{:, i}), i} = -120; % safety: any leftover NaN -> -120
+        col(col == "*") = "-120";
+        num = str2double(col);
+        num(isnan(num)) = -120;     % safety for blanks, etc.
+        T.(vname) = num;            % replace entire variable (type becomes double)
     end
 end
+
+
